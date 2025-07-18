@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Machine Game</title>
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --bg-dark: #1e293b;
+            --bg-light: #334155;
+            --text: #e2e8f0;
+            --win: #10b981;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background-color: var(--bg-light);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .info-box {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .balance {
+            color: var(--primary);
+        }
+        
+        .bet {
+            color: var(--primary);
+        }
+        
+        .win {
+            color: var(--win);
+        }
+        
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            perspective: 1000px;
+        }
+        
+        .reel {
+            width: 100px;
+            height: 150px;
+            background-color: #0f172a;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--primary);
+        }
+        
+        .reel-container {
+            position: absolute;
+            width: 100%;
+            transition: transform 3s cubic-bezier(0.17, 0.89, 0.32, 0.99);
+        }
+        
+        .symbol {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+        }
+        
+        .controls {
+            margin-top: 30px;
+        }
+        
+        .bet-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .bet-btn {
+            background-color: var(--primary);
+            color: black;
+            border: none;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 15px;
+            transition: all 0.2s;
+        }
+        
+        .bet-btn:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.1);
+        }
+        
+        .spin-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .paytable {
+            margin-top: 30px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .paytable h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .paytable-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .paytable-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .symbol-preview {
+            font-size: 1.8rem;
+        }
+        
+        @keyframes win {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .win-animation {
+            animation: win 0.5s 3;
+            color: var(--win) !important;
+        }
+        
+        @media (max-width: 500px) {
+            .info-panel {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .reel {
+                width: 80px;
+                height: 120px;
+            }
+            
+            .symbol {
+                height: 120px;
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Slot Machine</h1>
+        
+        <div class="info-panel">
+            <div class="info-box">
+                <div class="info-label">Balance</div>
+                <div id="balance" class="info-value balance">1000</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Bet Amount</div>
+                <div id="bet-amount" class="info-value bet">10</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Last Win</div>
+                <div id="last-win" class="info-value win">0</div>
+            </div>
+        </div>
+        
+        <div class="slot-machine">
+            <div class="reel">
+                <div id="reel1" class="reel-container"></div>
+            </div>
+            <div class="reel">
+                <div id="reel2" class="reel-container"></div>
+            </div>
+            <div class="reel">
+                <div id="reel3" class="reel-container"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="bet-controls">
+                <button id="bet-down" class="bet-btn">-</button>
+                <span>Current Bet</span>
+                <button id="bet-up" class="bet-btn">+</button>
+            </div>
+            <button id="spin-btn" class="spin-btn">SPIN</button>
+        </div>
+        
+        <div class="paytable">
+            <h2>Paytable</h2>
+            <div class="paytable-grid">
+                <div class="paytable-item">
+                    <div>🔔🔔🔔</div>
+                    <div>x4</div>
+                </div>
+                <div class="paytable-item">
+                    <div>🍒🍒🍒</div>
+                    <div>x3</div>
+                </div>
+                <div class="paytable-item">
+                    <div>🍋🍋🍋</div>
+                    <div>x2</div>
+                </div>
+                <div class="paytable-item">
+                    <div>🍊🍊🍊</div>
+                    <div>x2</div>
+                </div>
+                <div class="paytable-item">
+                    <div>⭐️⭐️⭐️</div>
+                    <div>x5</div>
+                </div>
+                <div class="paytable-item">
+                    <div>7️⃣7️⃣7️⃣</div>
+                    <div>x10</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game configuration
+        const symbols = ['🔔', '🍒', '🍋', '🍊', '⭐️', '7️⃣'];
+        const paytable = {
+            '🔔🔔🔔': 4,
+            '🍒🍒🍒': 3,
+            '🍋🍋🍋': 2,
+            '🍊🍊🍊': 2,
+            '⭐️⭐️⭐️': 5,
+            '7️⃣7️⃣7️⃣': 10
+        };
+        
+        // Game state
+        let balance = 1000;
+        let bet = 10;
+        let lastWin = 0;
+        let isSpinning = false;
+        
+        // DOM elements
+        const balanceEl = document.getElementById('balance');
+        const betAmountEl = document.getElementById('bet-amount');
+        const lastWinEl = document.getElementById('last-win');
+        const spinBtn = document.getElementById('spin-btn');
+        const betDownBtn = document.getElementById('bet-down');
+        const betUpBtn = document.getElementById('bet-up');
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+        
+        // Initialize the game
+        function init() {
+            // Create symbol elements for each reel
+            for (let i = 0; i < reels.length; i++) {
+                const reelContainer = reels[i];
+                reelContainer.innerHTML = '';
+                
+                // Create multiple symbols (for visual effect)
+                for (let j = 0; j < 30; j++) {
+                    const symbol = document.createElement('div');
+                    symbol.className = 'symbol';
+                    symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    reelContainer.appendChild(symbol);
+                }
+            }
+            
+            // Update UI
+            updateUI();
+            
+            // Event listeners
+            spinBtn.addEventListener('click', spin);
+            betDownBtn.addEventListener('click', decreaseBet);
+            betUpBtn.addEventListener('click', increaseBet);
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    spin();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    increaseBet();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    decreaseBet();
+                }
+            });
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            balanceEl.textContent = balance;
+            betAmountEl.textContent = bet;
+            lastWinEl.textContent = lastWin;
+            
+            // Disable spin button if not enough balance or already spinning
+            spinBtn.disabled = balance < bet || isSpinning;
+            
+            // Disable bet buttons if spinning
+            betDownBtn.disabled = isSpinning || bet <= 10;
+            betUpBtn.disabled = isSpinning || balance < bet + 10 || bet >= 100;
+        }
+        
+        // Increase bet amount
+        function increaseBet() {
+            if (isSpinning) return;
+            
+            const newBet = bet + 10;
+            if (newBet > balance) return;
+            if (newBet > 100) return;
+            
+            bet = newBet;
+            updateUI();
+        }
+        
+        // Decrease bet amount
+        function decreaseBet() {
+            if (isSpinning) return;
+            
+            const newBet = bet - 10;
+            if (newBet < 10) return;
+            
+            bet = newBet;
+            updateUI();
+        }
+        
+        // Spin the reels
+        function spin() {
+            if (isSpinning || balance < bet) return;
+            
+            isSpinning = true;
+            balance -= bet;
+            updateUI();
+            
+            // Reset last win display
+            lastWin = 0;
+            lastWinEl.textContent = lastWin;
+            lastWinEl.classList.remove('win-animation');
+            
+            // Get random positions for each reel
+            const positions = [
+                Math.floor(Math.random() * symbols.length),
+                Math.floor(Math.random() * symbols.length),
+                Math.floor(Math.random() * symbols.length)
+            ];
+            
+            // Add some randomness to make spins more variable
+            const spins = [
+                positions[0] + 20 + Math.floor(Math.random() * 10),
+                positions[1] + 20 + Math.floor(Math.random() * 10),
+                positions[2] + 20 + Math.floor(Math.random() * 10)
+            ];
+            
+            // Spin each reel
+            const promises = reels.map((reel, i) => {
+                return new Promise((resolve) => {
+                    const position = -spins[i] * 150; // 150 is symbol height
+                    reel.style.transform = `translateY(${position}px)`;
+                    
+                    // Resolve when transition ends
+                    reel.addEventListener('transitionend', () => {
+                        resolve(symbols[positions[i]]);
+                    }, { once: true });
+                });
+            });
+            
+            // When all reels stop spinning
+            Promise.all(promises).then((results) => {
+                isSpinning = false;
+                
+                // Check for win
+                checkWin(results);
+                updateUI();
+            });
+        }
+        
+        // Check if the result is a winning combination
+        function checkWin(results) {
+            const combination = results.join('');
+            
+            if (paytable.hasOwnProperty(combination)) {
+                const multiplier = paytable[combination];
+                lastWin = bet * multiplier;
+                balance += lastWin;
+                
+                // Show win animation
+                lastWinEl.classList.add('win-animation');
+                
+                // Play win sound
+                playSound('win');
+            } else {
+                lastWin = 0;
+                playSound('spin');
+            }
+        }
+        
+        // Simple sound effects
+        function playSound(type) {
+            // In a real game, you would use actual audio files
+            const audio = new Audio();
+            audio.volume = 0.2;
+            
+            if (type === 'win') {
+                // Simulate win sound
+                audio.src = 'data:audio/wav;base64,UklGRl...'; // Short base64 audio
+            } else {
+                // Simulate spin sound
+                audio.src = 'data:audio/wav;base64,UklGRl...'; // Short base64 audio
+            }
+            
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+        
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
+
